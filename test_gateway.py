@@ -3,6 +3,7 @@ from fastapi.testclient import TestClient
 from pydantic import ValidationError
 
 from gateway import InferenceRequest, app
+from schemas import InferenceResponse
 
 client = TestClient(app)
 
@@ -39,3 +40,8 @@ def test_infer_empty_prompt():
         json={"model": "mistral", "prompt": ""},
     )
     assert response.status_code == 422
+
+
+def test_negative_latency():
+    with pytest.raises(ValidationError):
+        InferenceResponse(model="llama3", response="Valid response.", latency_ms=-1)

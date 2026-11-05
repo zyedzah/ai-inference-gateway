@@ -1,12 +1,8 @@
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
+
+from schemas import InferenceRequest
 
 app = FastAPI()
-
-
-class InferenceRequest(BaseModel):
-    model: str = Field(min_length=1, max_length=100)
-    prompt: str = Field(min_length=1, max_length=2000)
 
 
 @app.get("/healthz")
