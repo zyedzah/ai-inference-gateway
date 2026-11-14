@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!requirements.txt
+!gateway.py
+!inference_client.py
+!schemas.py
