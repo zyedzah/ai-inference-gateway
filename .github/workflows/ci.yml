@@ -14,5 +14,10 @@ jobs:
         run: |
           docker run -d --name gateway -p 127.0.0.1:8080:8080 inference-gateway:dev
           curl --fail --silent --show-error --max-time 5 \
-          --retry 10 --retry-connrefused --retry-delay 1 \
+          --retry 10 --retry-connrefused --retry-delay 1 --retry-max-time 30 \
           http://127.0.0.1:8080/healthz
+      - name: Show container details on failure
+        if: failure()
+        run: |
+          docker ps -a --filter name=gateway
+          docker logs gateway
