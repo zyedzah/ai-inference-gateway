@@ -36,6 +36,15 @@ jobs:
           curl --fail --silent --show-error --max-time 5 \
           --retry 10 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
           http://127.0.0.1:8080/healthz
+      - name: Generate image SBOM
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
+        with:
+          version: "v0.76.2"
+          scan-type: image
+          image-ref: inference-gateway:dev
+          format: cyclonedx
+          output: sbom.cdx.json
+          exit-code: "0"
       - name: Scan container image
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25
         with:
@@ -43,9 +52,19 @@ jobs:
           scan-type: image
           image-ref: inference-gateway:dev
           scanners: vuln
-          format: table
+          format: json
+          output: trivy-report.json
           severity: HIGH,CRITICAL
           exit-code: "1"
+      - name: Upload image reports
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: image-reports
+          path: |
+            sbom.cdx.json
+            trivy-report.json
+          rention-days: 14
       - name: Show container details on failure
         if: failure()
         run: |
