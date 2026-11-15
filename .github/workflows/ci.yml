@@ -1,5 +1,6 @@
+---
 name: Build gateway
-on: [push, pull_request]
+"on": [push, pull_request]
 
 permissions:
   contents: read
@@ -9,10 +10,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements-dev.txt
+
+      - name: Run tests
+        run: |
+          python -m pytest -q
+
+      - name: Run Ruff
+        run: python -m ruff check .
+
       - run: docker build -t inference-gateway:dev .
       - name: Smoke-test gateway
         run: |
-          docker run -d --name gateway -p 127.0.0.1:8080:8080 inference-gateway:dev
+          docker run -d --name gateway \
+            -p 127.0.0.1:8080:8080 inference-gateway:dev
           curl --fail --silent --show-error --max-time 5 \
           --retry 10 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
           http://127.0.0.1:8080/healthz
