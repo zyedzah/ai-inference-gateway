@@ -25,6 +25,9 @@ jobs:
       - name: Run Ruff
         run: python -m ruff check .
 
+      - name: Scan Python dependencies
+        run: python -m pip_audit -r requirements.txt
+
       - run: docker build -t inference-gateway:dev .
       - name: Smoke-test gateway
         run: |
