@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+repo="zyedzah/ai-inference-gateway"
+
+gh api --method POST "repos/$repo/rulesets" --input - \
+  --jq '{id, name, enforcement}' <<'JSON'
+{
+  "name": "Protect main",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [],
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    {
+      "type": "pull_request",
+      "parameters": {
+        "required_approving_review_count": 0,
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_review_thread_resolution": false
+      }
+    },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "strict_required_status_checks_policy": true,
+        "required_status_checks": [
+          {
+            "context": "build",
+            "integration_id": 15368
+          }
+        ]
+      }
+    }
+  ]
+}
+JSON
+
+gh api "repos/$repo/rules/branches/main" --jq '.[].type'
